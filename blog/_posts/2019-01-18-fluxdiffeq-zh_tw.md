@@ -1,17 +1,27 @@
 ---
 layout: post
-title:  DiffEqFlux.jl – A Julia Library for Neural Differential Equations
-author: Chris Rackauckas, Mike Innes, Yingbo Ma, Jesse Bettencourt, Lyndon White, Vaibhav Dixit
+title:  DiffEqFlux.jl – 一個 Julia 的神經微分方程套件
+author: Chris Rackauckas, Mike Innes, Yingbo Ma, Jesse Bettencourt, Lyndon White, Vaibhav Dixit, 譯者：杜岳華（Yueh-Hua Tu）
 ---
 
-Translations:  <a href="https://julialang.org/blog/2019/01/fluxdiffeq-zh_tw">Traditional Chinese</a>
+在這篇部落格文章中，我們將會展示在 Julia 中使用微分方程解法（DiffEq）在神經網路上有多麼簡單、有效而且穩定。
 
-In this blog post we will show you how to easily, efficiently, and
-robustly use differential equation (DiffEq) solvers with neural networks in Julia.
+<!-- In this blog post we will show you how to easily, efficiently, and
+robustly use differential equation (DiffEq) solvers with neural networks in Julia. -->
 
-![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
+![Flux ODE 訓練動畫](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
 
-The [Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366)
+<!-- ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif) -->
+
+[Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366)，
+在這篇文章得到 NeurIPS 2018 的最佳論文獎的殊榮之前，早已成為熱門話題。
+這篇論文給出了許多令人讚賞的結果，他結合了兩個不相干的領域，但這只不過是個開始而已：
+神經網路與微分方程簡直天生絕配。這篇部落格文章來自 [Flux](https://github.com/FluxML/Flux.jl)
+套件的作者與 [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
+套件作者的合作，實作 Neural ODEs 論文, 將會解釋為什麼這個專案會誕生，以及這個專案現在和未來的走向，
+也會開始描繪極致的工具會有怎樣的可能性。
+
+<!-- The [Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366)
 paper has been a hot topic even before it made a splash as Best Paper of NeurIPS 2018.
 The paper already gives many exciting results combining these two
 disparate fields, but this is only the beginning: neural networks and
@@ -20,7 +30,7 @@ between authors of [Flux](https://github.com/FluxML/Flux.jl),
 [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl)
 and the Neural ODEs paper, will explain why, outline current and future
 directions for this work, and start to give a sense of what's possible with
-state-of-the-art tools.
+state-of-the-art tools. -->
 
 The advantages of the Julia
 [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) library for numerically solving differential equations have been

@@ -169,11 +169,17 @@ should be. Because of this, differential equations have been the tool of choice
 in most science. For example, physical laws tell you how electrical quantities
 emit forces ([Maxwell's Equations](https://en.wikipedia.org/wiki/Maxwell%27s_equations)).
 These are essentially equations of how things change and thus
-"where things will be" is the solution to a differential equation. -->But in recent
+"where things will be" is the solution to a differential equation. -->
+
+但在近十年這些應用已經有長遠的發展，隨著像是系統生物學（systems biology）領域的發展，
+整合已知的生物結構以及數學上列舉的假設，以學習到關於細胞間的交互作用，
+或是系統藥理學（systems pharmacology）中藉由對一些特定藥物劑量 PK/PD 的建模。
+
+<!-- But in recent
 decades this application has gone much further, with fields like systems biology
 learning about cellular interactions by encoding known biological structures and
 mathematically enumerating our assumptions or in targeted drug dosage through
-PK/PD modelling in systems pharmacology.
+PK/PD modelling in systems pharmacology. -->
 
 So as our machine learning models grow and are hungry for larger and larger
 amounts of data, differential equations have become an attractive option for

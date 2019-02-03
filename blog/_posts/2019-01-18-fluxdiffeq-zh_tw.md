@@ -34,11 +34,11 @@ state-of-the-art tools. -->
 
  Julia 中運用數值方法來解微分方程的 [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) 函式庫
 的眾多優勢已經在[其他文章中被詳細討論](http://www.stochasticlifestyle.com/comparison-differential-equation-solver-suites-matlab-r-julia-python-c-fortran/)。
-除了[相對經典 Fortran 方法的延伸效能評測](https://github.com/JuliaDiffEq/DiffEqBenchmarks.jl)，
+除了[經典 Fortran 方法的眾多效能評測](https://github.com/JuliaDiffEq/DiffEqBenchmarks.jl)，
 他包含了其他現代功能，像是 [GPU 加速](http://www.stochasticlifestyle.com/solving-systems-stochastic-pdes-using-gpus-julia/)、
 [分散式（多節點）平行運算](http://docs.juliadiffeq.org/latest/features/monte_carlo.html)
 以及[精密的事件處理](http://docs.juliadiffeq.org/latest/features/callback_functions.html)。
-最近，這些native 的 Julia 微分方程方法已經成功地整合進 [Flux](https://github.com/FluxML/Flux.jl/) 深度學習套件，
+最近，這些 Julia 土生土長的微分方程方法已經成功地整合進 [Flux](https://github.com/FluxML/Flux.jl/) 深度學習套件，
 並允許在神經網路中使用整套完整測試、優化的 DiffEq 方法。
 使用新套件 [DiffEqFlux.jl](https://github.com/JuliaDiffEq/DiffEqFlux.jl/)，我們將會展示給讀者
 在神經網路中增加微分方程層有多麼簡單，並可以使用一系列微分方程方法，

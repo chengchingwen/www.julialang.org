@@ -32,7 +32,19 @@ and the Neural ODEs paper, will explain why, outline current and future
 directions for this work, and start to give a sense of what's possible with
 state-of-the-art tools. -->
 
-The advantages of the Julia
+ Julia 中運用數值方法來解微分方程的 [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) 函式庫
+的眾多優勢已經在[其他文章中被詳細討論](http://www.stochasticlifestyle.com/comparison-differential-equation-solver-suites-matlab-r-julia-python-c-fortran/)。
+除了[經典 Fortran 方法的眾多效能評測](https://github.com/JuliaDiffEq/DiffEqBenchmarks.jl)，
+他包含了其他現代功能，像是 [GPU 加速](http://www.stochasticlifestyle.com/solving-systems-stochastic-pdes-using-gpus-julia/)、
+[分散式（多節點）平行運算](http://docs.juliadiffeq.org/latest/features/monte_carlo.html)
+以及[精密的事件處理](http://docs.juliadiffeq.org/latest/features/callback_functions.html)。
+最近，這些 Julia 土生土長的微分方程方法已經成功地整合進 [Flux](https://github.com/FluxML/Flux.jl/) 深度學習套件，
+並允許在神經網路中使用整套完整測試、優化的 DiffEq 方法。
+使用新套件 [DiffEqFlux.jl](https://github.com/JuliaDiffEq/DiffEqFlux.jl/)，我們將會展示給讀者
+在神經網路中增加微分方程層有多麼簡單，並可以使用一系列微分方程方法，
+包含剛性（stiff）常微分方程、隨機微分方程、延遲微分方程，以及混合（非連續）微分方程。
+
+<!-- The advantages of the Julia
 [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) library for numerically solving differential equations have been
 [discussed in detail in other posts](http://www.stochasticlifestyle.com/comparison-differential-equation-solver-suites-matlab-r-julia-python-c-fortran/).
 Along with its
@@ -48,20 +60,31 @@ highly tested and optimized DiffEq methods within neural networks. Using the new
 we will show the reader how to easily add differential equation
 layers to neural networks using a range of differential equations models, including stiff ordinary
 differential equations, stochastic differential equations, delay differential
-equations, and hybrid (discontinuous) differential equations.
+equations, and hybrid (discontinuous) differential equations. -->
 
-This is the first toolbox to combine a fully-featured differential equations
+這是第一個完美結合完整微分方程方法及神經網路模型的工具組。這個部落格文章將會說明為什麼完整微分方程
+方法套組的彈性如此重要。能夠融合神經網路及 ODEs、SDEs、DAEs、DDEs、剛性方程，
+以及像伴隨敏感度運算（adjoint sensitivity calculations）這樣不同的方法，
+這是一個神經微分方程重大的廣義化工作，將來提供更好的工具讓研究者去探索問題領域。
+
+<!-- This is the first toolbox to combine a fully-featured differential equations
 solver library and neural networks seamlessly together. The blog post will also
 show why the flexibility of a full differential equation solver suite is
 necessary. With the ability to fuse neural networks with ODEs, SDEs, DAEs, DDEs,
 stiff equations, and different methods for adjoint sensitivity calculations,
 this is a large generalization of the neural ODEs work and will allow
-researchers to better explore the problem domain.
+researchers to better explore the problem domain. -->
 
-(Note: If you are interested in this work and are an undergraduate or graduate
+（註：如果你對這個工作有興趣，同時是大學或是研究所學生，
+我們有 [提供 Google Summer of Code 專案](https://julialang.org/soc)。
+並且 [暑假過後有豐厚的津貼補助](https://developers.google.com/open-source/gsoc/help/student-stipends)。
+請加入 [Julia Slack](https://slackinvite.julialang.org/) 的 #jsoc 頻道，
+歡迎更進一步的細節討論。）
+
+<!-- (Note: If you are interested in this work and are an undergraduate or graduate
 student, we have [Google Summer of Code projects available in this area](https://julialang.org/soc). This
 [pays quite well over the summer](https://developers.google.com/open-source/gsoc/help/student-stipends).
-Please join the [Julia Slack](https://slackinvite.julialang.org/) and the #jsoc channel to discuss in more detail.)
+Please join the [Julia Slack](https://slackinvite.julialang.org/) and the #jsoc channel to discuss in more detail.) -->
 
 
 ## 微分方程究竟與神經網絡有何關聯？
@@ -70,7 +93,7 @@ Please join the [Julia Slack](https://slackinvite.julialang.org/) and the #jsoc 
 
 讓我們稍稍解釋一下最後這句話在說什麼。一般來說，主要有三種方法來定義一個非線性轉換: 直接數學建模、機器學習與微分方程式。直接數學建模可以直接寫下輸入與輸出間的非線性轉換，但只有在輸入與輸出間的函數關係形式為已知時可用，然而大部分的狀況，兩者間的確切關係並不是事先知道的。所以大多數的問題是，你如何在輸入輸出間的關係未知的情況下，來對其做非線性數學建模？
 
-其中一種解決方法是使用機器學習演算法。典型的機器學習處理的問題裡，會給定一些輸入資料 `x` 和你想預測的輸出 `y`。而由給定 `x` 產生預測值 `y` 就是一個機器學習模型 (以下稱作 `ML`)。在訓練階段，我們想辦法調整 `ML` 的參數讓它得以產生更正確的預測值。接下來，我們即可用 `ML` 進行推論 (即針對事前沒見過的 `x` 值去產生相對應的 `y`)。同時，這也不過是一個非線性轉換而已 `y=ML(x)`。但是 `ML` 有趣的地方在於他本身數學模型的形式可以非常基本但卻可以調整適應至各種資料。舉例來說，一個簡單的以 sigmoid 函數作為激活函數的神經網絡模型 (以設計矩陣的形式，design matrix)，本質上來說就是簡單的矩陣運算複合帶入 sigmoid 函數裡。舉例來說，`ML(x)=σ(W3⋅σ(W2⋅σ(W1⋅x)))` 即是一個簡單的三層神經網絡模型，其中 `W=(W1, W2, W3)` 為可以被調整的模型參數。接下來即是選擇適當的 `W` 使得 `ML(x)=y` 可以合理的逼近收集到的資料。相關機器學習理論已經保證了這是一個估計非線性系統的一個好方法。舉例來說，Universal Approximation Theorem 說明了只要有足夠的層數或參數 (即夠大的 `W` 矩陣)，`ML(x)` 可以逼近任何非線性函數 (在常見的限制條件下)。
+其中一種解決方法是使用機器學習演算法。典型的機器學習處理的問題裡，會給定一些輸入資料 [[x]] 和你想預測的輸出 [[y]]。而由給定 [[x]] 產生預測值 [[y]] 就是一個機器學習模型 (以下稱作 [[ML]])。在訓練階段，我們想辦法調整 [[ML]] 的參數讓它得以產生更正確的預測值。接下來，我們即可用 [[ML]] 進行推論 (即針對事前沒見過的 `x` 值去產生相對應的 [[y]])。同時，這也不過是一個非線性轉換而已 [[y=ML(x)]]。但是 [[ML]] 有趣的地方在於他本身數學模型的形式可以非常基本但卻可以調整適應至各種資料。舉例來說，一個簡單的以 sigmoid 函數作為激活函數的神經網絡模型 (以設計矩陣的形式，design matrix)，本質上來說就是簡單的矩陣運算複合帶入 sigmoid 函數裡。舉例來說，[[ML(x)=σ(W3⋅σ(W2⋅σ(W1⋅x)))]] 即是一個簡單的三層神經網絡模型，其中 [[W=(W1, W2, W3)]] 為可以被調整的模型參數。接下來即是選擇適當的 [[W]] 使得 [[ML(x)=y]] 可以合理的逼近收集到的資料。相關機器學習理論已經保證了這是一個估計非線性系統的一個好方法。舉例來說，Universal Approximation Theorem 說明了只要有足夠的層數或參數 (即夠大的 [[W]] 矩陣)，[[ML(x)]] 可以逼近任何非線性函數 (在常見的限制條件下)。
 
 這太好了，它總是有解！然而有幾個必須注意的地方，主要在於這模型需直接從資料裡學習非線性轉換。但在大多數的狀況，我們並不知曉有興趣的非線性方程整體，但我們卻可以知道它的*結構細節*。舉例來說，這個非線性轉換可以是關於森林裡的兔子的數量，而我們可能知道兔子群體的出生率正比於其數量。因此，與其從無到有去學習兔子群體數量的非線性模型，我們或許希望能夠套用這個數量與出生率的已知*先驗（a priori）*關係，和一組參數來描寫它。對於我們的兔子群體模型來說，可以寫成
 
@@ -80,11 +103,11 @@ $[[\text{rabbits(明日)} = \text{Model}(\text{rabbits(今日)}).]]
 
 $[[\text{rabbits}'(t) = \alpha\cdot \text{rabbits}(t)]]
 
-其中，`α` 是可以學習調整的參數。如果你還記得以前學過的微積分，這個方程的解即為成長率為 `α` 的指數成長函數:
+其中，[[α]] 是可以學習調整的參數。如果你還記得以前學過的微積分，這個方程的解即為成長率為 `α` 的指數成長函數:
 
 [[\text{rabbits}(t_\text{start})e^{(\alpha t)}]]
 
-其中 `rabbits(start)` 為初始的兔子數量。但值得注意的是，其實我們並不需要知道這個微分方程的解才能驗證以下想法：我們只需描寫模型的結構條件，數學即可幫助我們求解出這個解應該有的樣子。基於這個理由，使得微分方程成為許多科學領域的工具。例如物理學的基本定律明述了電荷的作用力 ([馬克士威方程組](https://en.wikipedia.org/wiki/Maxwell%27s_equations))。這些方程組對於物體如何改變是重要的方程組，因此這些方程組的解即是物體*將會*在哪裡的預測結果。
+其中 [[rabbits(start)]] 為初始的兔子數量。但值得注意的是，其實我們並不需要知道這個微分方程的解才能驗證以下想法：我們只需描寫模型的結構條件，數學即可幫助我們求解出這個解應該有的樣子。基於這個理由，使得微分方程成為許多科學領域的工具。例如物理學的基本定律明述了電荷的作用力 ([馬克士威方程組](https://en.wikipedia.org/wiki/Maxwell%27s_equations))。這些方程組對於物體如何改變是重要的方程組，因此這些方程組的解即是物體*將會*在哪裡的預測結果。
 
 <!-- ## What do differential equations have to do with machine learning?
 
@@ -146,11 +169,17 @@ should be. Because of this, differential equations have been the tool of choice
 in most science. For example, physical laws tell you how electrical quantities
 emit forces ([Maxwell's Equations](https://en.wikipedia.org/wiki/Maxwell%27s_equations)).
 These are essentially equations of how things change and thus
-"where things will be" is the solution to a differential equation. -->But in recent
+"where things will be" is the solution to a differential equation. -->
+
+但在近十年這些應用已經有長遠的發展，隨著像是系統生物學（systems biology）領域的發展，
+整合已知的生物結構以及數學上列舉的假設，以學習到關於細胞間的交互作用，
+或是系統藥理學（systems pharmacology）中藉由對一些特定藥物劑量 PK/PD 的建模。
+
+<!-- But in recent
 decades this application has gone much further, with fields like systems biology
 learning about cellular interactions by encoding known biological structures and
 mathematically enumerating our assumptions or in targeted drug dosage through
-PK/PD modelling in systems pharmacology.
+PK/PD modelling in systems pharmacology. -->
 
 So as our machine learning models grow and are hungry for larger and larger
 amounts of data, differential equations have become an attractive option for

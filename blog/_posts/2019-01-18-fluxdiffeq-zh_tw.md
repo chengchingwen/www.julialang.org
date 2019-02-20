@@ -237,25 +237,36 @@ step sizes [[\Delta x]] and use high order approximations to dratically reduce t
 number of actual steps required. And as it turns out, this works well in
 practice, too. -->
 
-## How do you solve an ODE?
+## 那要怎麼解微分方程呢？
 
-First, how do you numerically specify and solve an ODE? If you're new to solving
+首先，要如何解出微分方程的數值解呢？如果你是解微分方程的新手，
+你可能想要參考我們的[用 Julia 解微分方程影片教學](https://www.youtube.com/watch?v=KPEqYtEd-zY)，
+以及參考我們的[DifferentialEquations.jl 微分方程教學手冊](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html)。
+概念是這樣的，如果你透過導函數 `u'=f(u,p,t)` 定義一個 `ODEProblem`，
+接著提供一個初始條件 `u0`，一個需要解的時間區段 `tspan`，以及相關的參數 `p`。
+
+<!-- First, how do you numerically specify and solve an ODE? If you're new to solving
 ODEs, you may want to watch our
 [video tutorial on solving ODEs in Julia](https://www.youtube.com/watch?v=KPEqYtEd-zY)
 and look through the
 [ODE tutorial of the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html).
 The idea is that you define an `ODEProblem` via a derivative equation `u'=f(u,p,t)`,
 and provide an initial condition `u0`, and a timespan `tspan` to solve over, and
-specify the parameters `p`.
+specify the parameters `p`. -->
 
-For example, the
+舉例來說，[洛特卡－沃爾泰拉方程（Lotka-Volterra equations）描述了野兔與狼族群的動態關係](https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations)。
+他們可以被寫成：
+
+<!-- For example, the
 [Lotka-Volterra equations describe the dynamics of the population of rabbits and wolves](https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations).
-They can be written as:
+They can be written as: -->
 
 $[[x^\prime = \alpha x + \beta x y]]
 $[[y^\prime = -\gamma y + \gamma x y]]
 
-and encoded in Julia like:
+進一步轉成 Julia 會像：
+
+<!-- and encoded in Julia like: -->
 
 ```julia
 using DifferentialEquations
@@ -271,8 +282,10 @@ p = [1.5,1.0,3.0,1.0]
 prob = ODEProblem(lotka_volterra,u0,tspan,p)
 ```
 
-Then to solve the differential equations, you can simply call `solve` on the
-`prob`:
+然後要解微分方程，你可以簡單地呼叫 `solve` 來處理 `prob`：
+
+<!-- Then to solve the differential equations, you can simply call `solve` on the
+`prob`: -->
 
 ```julia
 sol = solve(prob)
@@ -282,8 +295,11 @@ plot(sol)
 
 ![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
-One last thing to note is that we can make our initial condition (`u0`) and time spans (`tspans`)
-to be functions of the parameters (the elements of `p`). For example, we can define the `ODEProblem`:
+最後一件要說的事情就是我們可以讓我們的初始條件（`u0`）以及時間區段（`tspans`）
+成為參數（`p` 的元素）的函式。舉例來說，我們可以這樣定義 `ODEProblem`：
+
+<!-- One last thing to note is that we can make our initial condition (`u0`) and time spans (`tspans`)
+to be functions of the parameters (the elements of `p`). For example, we can define the `ODEProblem`: -->
 
 ```julia
 u0_f(p,t0) = [p[2],p[4]]
@@ -292,13 +308,20 @@ p = [1.5,1.0,3.0,1.0]
 prob = ODEProblem(lotka_volterra,u0_f,tspan_f,p)
 ```
 
-In this form, everything about the problem is determined by the parameter vector (`p`, referred to
-as `θ` in associated literature). The utility of this will be seen later.
+如此一來，關於這個問題的所有東西都由參數向量決定（`p`，或是文獻中的 `θ`）。
+這東西的用途會在後續彰顯出來。
 
-DifferentialEquations.jl has many powerful options for customising things like
+<!-- In this form, everything about the problem is determined by the parameter vector (`p`, referred to
+as `θ` in associated literature). The utility of this will be seen later. -->
+
+DifferentialEquations.jl 提供非常多強大的選項可以客製化一些指標，
+像是準確度（accuracy）、容忍度（tolerances）、微分方程方法、事件等等；可以參考
+[手冊](http://docs.juliadiffeq.org/latest/)以獲得更多進階的使用方式。
+
+<!-- DifferentialEquations.jl has many powerful options for customising things like
 accuracy, tolerances, solver methods, events and more; check out [the
 docs](http://docs.juliadiffeq.org/latest/) for more details on how to use it in
-more advanced ways.
+more advanced ways. -->
 
 ## Let's Put an ODE Into a Neural Net Framework!
 

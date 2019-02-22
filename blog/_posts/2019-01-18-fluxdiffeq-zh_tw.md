@@ -89,6 +89,8 @@ Please join the [Julia Slack](https://slackinvite.julialang.org/) and the #jsoc 
 
 ## 微分方程究竟與神經網絡有何關聯？
 
+<!-- ## What do differential equations have to do with machine learning? -->
+
 對於不熟悉相關領域的人來說，想必第一個問題自然是：為什麼微分方程在神經網絡這個脈絡下，會有舉足輕重的關聯？簡而言之，微分方程可以藉由數學模型來敘述、編碼 (encoding) 先驗的結構化假設，來表示任何一種非線性系統。
 
 讓我們稍稍解釋一下最後這句話在說什麼。一般來說，主要有三種方法來定義一個非線性轉換: 直接數學建模、機器學習與微分方程式。直接數學建模可以直接寫下輸入與輸出間的非線性轉換，但只有在輸入與輸出間的函數關係形式為已知時可用，然而大部分的狀況，兩者間的確切關係並不是事先知道的。所以大多數的問題是，你如何在輸入輸出間的關係未知的情況下，來對其做非線性數學建模？
@@ -239,6 +241,8 @@ practice, too. -->
 
 ## 那要怎麼解微分方程呢？
 
+<!-- ## How do you solve an ODE? -->
+
 首先，要如何解出微分方程的數值解呢？如果你是解微分方程的新手，
 你可能想要參考我們的[用 Julia 解微分方程影片教學](https://www.youtube.com/watch?v=KPEqYtEd-zY)，
 以及參考我們的[DifferentialEquations.jl 微分方程教學手冊](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html)。
@@ -323,16 +327,24 @@ accuracy, tolerances, solver methods, events and more; check out [the
 docs](http://docs.juliadiffeq.org/latest/) for more details on how to use it in
 more advanced ways. -->
 
-## Let's Put an ODE Into a Neural Net Framework!
+## 讓我們把微分方程放到神經網路架構裡吧！
 
-To understand embedding an ODE into a neural network, let's look at what a
+<!-- ## Let's Put an ODE Into a Neural Net Framework! -->
+
+要理解一個微分方程是怎麼被嵌入到一個神經網路中，那我們就要看看一個神經網路層實際上是什麼。
+一個層實際上就是一個*可微分函數*，他會吃進一個大小為 `n` 的向量，然後吐出一個大小為 `m` 的新向量。
+就這樣！網路層傳統上是使用簡單的函數，像是矩陣相乘，但有了[可微分程式設計](https://julialang.org/blog/2017/12/ml&pl-zh_tw)的精神，
+人們越來越傾向實驗複雜的函數，像是光線追蹤以及物理引擎。
+
+
+<!-- To understand embedding an ODE into a neural network, let's look at what a
 neural network layer actually is. A layer is really just a *differentiable
 function* which takes in a vector of size `n` and spits out a new vector of size
 `m`. That's it! Layers have traditionally been simple functions like matrix
 multiply, but in the spirit of [differentiable
 programming](https://julialang.org/blog/2018/12/ml-language-compiler) people are
 increasingly experimenting with much more complex functions, such as ray tracers and
-physics engines.
+physics engines. -->
 
 Turns out that differential equations solvers fit this framework, too: A solve
 takes in some vector `p` (which might include parameters like the initial

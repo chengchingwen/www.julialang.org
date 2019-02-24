@@ -194,7 +194,7 @@ PK/PD modelling in systems pharmacology. -->
 
 <!-- ## What is the Neural Ordinary Differential Equation (ODE)? -->
 
-神經微分方程是眾多方法的其中之一，將這兩者結合在一起。
+神經微分方程只是眾多結合這兩個領域的方法之一。
 最簡單的解釋方法就是，並不是直接去學非線性轉換，我們希望去學到非線性轉換的結構。
 如此一來，不用去計算 $[[y=ML(x)]]，我們將機器學習模型放在導數項上 $[[y'(x) = ML(x)]]，然後我們解微分方程。
 為什麼要這麼做？這是因為，一個動機就是這樣定義的模型，然後用最簡單、最容易出錯的方式，尤拉法（Euler method），
@@ -221,10 +221,10 @@ $[[y_{i+1} = y_{i} + \Delta x\cdot ML(x_{i}).]] -->
 
 這在結構上相似於 ResNet，最為成功的影像處理模型之一。
 Neural ODEs 論文的洞見就是，更加深、更加強大的類 ResNet 的模型可以有效地逼近類似於「無限深」，
-如同每一層趨近於零，的模型。
+如同每一層趨近於零的模型。
 我們可以只是直接建構微分方程，並沒有多增加層數，然後用特製的微分方程方法求解。
 數值微分方程方法是個科學方法，可以追溯回到第一台電腦時期，而現代方法可以視情況調整步長 [[\Delta x]]，
-以及使用高階逼近的方法來大幅減少實際需要的步數。並且事實證明，他實際上也運作得很好。
+以及使用高階逼近的方法來大幅減少實際需要的步數。並且事實證明，他實務上也運作得很好。
 
 <!-- This looks similar in structure to a ResNet, one of the most successful image
 processing models. The insight of the the Neural ODEs paper was that

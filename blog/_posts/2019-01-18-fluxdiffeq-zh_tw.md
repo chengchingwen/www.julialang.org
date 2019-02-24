@@ -89,6 +89,8 @@ Please join the [Julia Slack](https://slackinvite.julialang.org/) and the #jsoc 
 
 ## 微分方程究竟與神經網絡有何關聯？
 
+<!-- ## What do differential equations have to do with machine learning? -->
+
 對於不熟悉相關領域的人來說，想必第一個問題自然是：為什麼微分方程在神經網絡這個脈絡下，會有舉足輕重的關聯？簡而言之，微分方程可以藉由數學模型來敘述、編碼 (encoding) 先驗的結構化假設，來表示任何一種非線性系統。
 
 讓我們稍稍解釋一下最後這句話在說什麼。一般來說，主要有三種方法來定義一個非線性轉換: 直接數學建模、機器學習與微分方程式。直接數學建模可以直接寫下輸入與輸出間的非線性轉換，但只有在輸入與輸出間的函數關係形式為已知時可用，然而大部分的狀況，兩者間的確切關係並不是事先知道的。所以大多數的問題是，你如何在輸入輸出間的關係未知的情況下，來對其做非線性數學建模？
@@ -181,18 +183,25 @@ learning about cellular interactions by encoding known biological structures and
 mathematically enumerating our assumptions or in targeted drug dosage through
 PK/PD modelling in systems pharmacology. -->
 
-So as our machine learning models grow and are hungry for larger and larger
-amounts of data, differential equations have become an attractive option for
-specifying nonlinearities in a learnable (via the parameters) but constrained
-form. They are essentially a way of incorporating prior domain-specific knowledge of the structural relations
-between the inputs and outputs. Given this way of looking at the two, both methods
-trade off advantages and disadvantages, making them complementary tools for modeling.
-It seems like a clear next step in scientific practice to start putting them
-together in new and exciting ways!
+所以隨著我們的機器學習模型成長，會渴求更多更大量的資料，
+微分方程因此成為一個很有吸引力的選項，用以指定一個可學習（透過參數）但又有限制條件的非線性轉換。
+他們會是在整合既有結構關係的領域知識，以及輸入輸出之間很重要的一個方式。
+有這樣的方法跟觀點來看待兩者，兩個方法都有其需要取捨的優缺點，
+可以讓彼此成為建模上互補的方法。
+這看起來是一條開始將科學實踐與機器學習兩相結合的明顯道路，期待未來會有嶄新而令人興奮的未來！
 
-## What is the Neural Ordinary Differential Equation (ODE)?
+## 什麼是神經微分方程（ODE）？
 
-The neural ordinary differential equation is one of many ways to put these two
+<!-- ## What is the Neural Ordinary Differential Equation (ODE)? -->
+
+神經微分方程只是眾多結合這兩個領域的方法之一。
+最簡單的解釋方法就是，並不是直接去學非線性轉換，我們希望去學到非線性轉換的結構。
+如此一來，不用去計算 $[[y=ML(x)]]，我們將機器學習模型放在導數項上 $[[y'(x) = ML(x)]]，然後我們解微分方程。
+為什麼要這麼做？這是因為，一個動機就是這樣定義的模型，然後用最簡單、最容易出錯的方式，尤拉法（Euler method），
+解微分方程，你會得到跟[殘差神經網路（residual neural network）](https://arxiv.org/abs/1512.03385)等價的結果。
+尤拉法的工作原理是基於 $[[y'(x) = \frac{dy}{dx}]] 這個事實，因此，
+
+<!-- The neural ordinary differential equation is one of many ways to put these two
 subjects together. The simplest way of explaining it is that, instead of
 learning the nonlinear transformation directly, we wish to learn the structures
 of the nonlinear transformation. Thus instead of doing $[[y=ML(x)]], we put the
@@ -200,13 +209,24 @@ machine learning model on the derivative, $[[y'(x) = ML(x)]], and now solve the 
 Why would you ever do this? Well, one motivation is that defining the model in this way
 and then solving the ODE using the simplest and most error prone method, the
 Euler method, what you get is equivalent to a [residual neural network](https://arxiv.org/abs/1512.03385).
-The way the Euler method works is based on the fact that $[[y'(x) = \frac{dy}{dx}]], thus
+The way the Euler method works is based on the fact that $[[y'(x) = \frac{dy}{dx}]], thus -->
 
-$[[\Delta y = (y_\text{next} - y_\text{prev}) = \Delta x\cdot ML(x)]]
+$[[\Delta y = (y_\text{next} - y_\text{prev}) = \Delta x\cdot ML(x)]]，
+則會導出
+$[[y_{i+1} = y_{i} + \Delta x\cdot ML(x_{i})]]。
+
+<!-- $[[\Delta y = (y_\text{next} - y_\text{prev}) = \Delta x\cdot ML(x)]]
 which implies that
-$[[y_{i+1} = y_{i} + \Delta x\cdot ML(x_{i}).]]
+$[[y_{i+1} = y_{i} + \Delta x\cdot ML(x_{i}).]] -->
 
-This looks similar in structure to a ResNet, one of the most successful image
+這在結構上相似於 ResNet，最為成功的影像處理模型之一。
+Neural ODEs 論文的洞見就是，更加深、更加強大的類 ResNet 的模型可以有效地逼近類似於「無限深」，
+如同每一層趨近於零的模型。
+我們可以只是直接建構微分方程，並沒有多增加層數，然後用特製的微分方程方法求解。
+數值微分方程方法是個科學方法，可以追溯回到第一台電腦時期，而現代方法可以視情況調整步長 [[\Delta x]]，
+以及使用高階逼近的方法來大幅減少實際需要的步數。並且事實證明，他實務上也運作得很好。
+
+<!-- This looks similar in structure to a ResNet, one of the most successful image
 processing models. The insight of the the Neural ODEs paper was that
 increasingly deep and powerful ResNet-like models effectively approximate a kind
 of "infinitely deep" model as each layer tends to zero. Rather than adding more
@@ -215,27 +235,40 @@ using a purpose-built ODE solver. Numerical ODE solvers are a science that goes
 all the way back to the first computers, and modern ones can adaptively choose
 step sizes [[\Delta x]] and use high order approximations to dratically reduce the
 number of actual steps required. And as it turns out, this works well in
-practice, too.
+practice, too. -->
 
-## How do you solve an ODE?
+## 那要怎麼解微分方程呢？
 
-First, how do you numerically specify and solve an ODE? If you're new to solving
+<!-- ## How do you solve an ODE? -->
+
+首先，要如何解出微分方程的數值解呢？如果你是解微分方程的新手，
+你可能想要參考我們的[用 Julia 解微分方程影片教學](https://www.youtube.com/watch?v=KPEqYtEd-zY)，
+以及參考我們的[DifferentialEquations.jl 微分方程教學手冊](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html)。
+概念是這樣的，如果你透過導函數 `u'=f(u,p,t)` 定義一個 `ODEProblem`，
+接著提供一個初始條件 `u0`，一個需要解的時間區段 `tspan`，以及相關的參數 `p`。
+
+<!-- First, how do you numerically specify and solve an ODE? If you're new to solving
 ODEs, you may want to watch our
 [video tutorial on solving ODEs in Julia](https://www.youtube.com/watch?v=KPEqYtEd-zY)
 and look through the
 [ODE tutorial of the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/latest/tutorials/ode_example.html).
 The idea is that you define an `ODEProblem` via a derivative equation `u'=f(u,p,t)`,
 and provide an initial condition `u0`, and a timespan `tspan` to solve over, and
-specify the parameters `p`.
+specify the parameters `p`. -->
 
-For example, the
+舉例來說，[洛特卡－沃爾泰拉方程（Lotka-Volterra equations）描述了野兔與狼族群的動態關係](https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations)。
+他們可以被寫成：
+
+<!-- For example, the
 [Lotka-Volterra equations describe the dynamics of the population of rabbits and wolves](https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations).
-They can be written as:
+They can be written as: -->
 
 $[[x^\prime = \alpha x + \beta x y]]
 $[[y^\prime = -\gamma y + \gamma x y]]
 
-and encoded in Julia like:
+進一步轉成 Julia 會像：
+
+<!-- and encoded in Julia like: -->
 
 ```julia
 using DifferentialEquations
@@ -251,8 +284,10 @@ p = [1.5,1.0,3.0,1.0]
 prob = ODEProblem(lotka_volterra,u0,tspan,p)
 ```
 
-Then to solve the differential equations, you can simply call `solve` on the
-`prob`:
+然後要解微分方程，你可以簡單地呼叫 `solve` 來處理 `prob`：
+
+<!-- Then to solve the differential equations, you can simply call `solve` on the
+`prob`: -->
 
 ```julia
 sol = solve(prob)
@@ -262,8 +297,11 @@ plot(sol)
 
 ![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
-One last thing to note is that we can make our initial condition (`u0`) and time spans (`tspans`)
-to be functions of the parameters (the elements of `p`). For example, we can define the `ODEProblem`:
+最後一件要說的事情就是我們可以讓我們的初始條件（`u0`）以及時間區段（`tspans`）
+成為參數（`p` 的元素）的函式。舉例來說，我們可以這樣定義 `ODEProblem`：
+
+<!-- One last thing to note is that we can make our initial condition (`u0`) and time spans (`tspans`)
+to be functions of the parameters (the elements of `p`). For example, we can define the `ODEProblem`: -->
 
 ```julia
 u0_f(p,t0) = [p[2],p[4]]
@@ -272,34 +310,58 @@ p = [1.5,1.0,3.0,1.0]
 prob = ODEProblem(lotka_volterra,u0_f,tspan_f,p)
 ```
 
-In this form, everything about the problem is determined by the parameter vector (`p`, referred to
-as `θ` in associated literature). The utility of this will be seen later.
+如此一來，關於這個問題的所有東西都由參數向量決定（`p`，或是文獻中的 `θ`）。
+這東西的用途會在後續彰顯出來。
 
-DifferentialEquations.jl has many powerful options for customising things like
+<!-- In this form, everything about the problem is determined by the parameter vector (`p`, referred to
+as `θ` in associated literature). The utility of this will be seen later. -->
+
+DifferentialEquations.jl 提供非常多強大的選項可以客製化一些指標，
+像是準確度（accuracy）、容忍度（tolerances）、微分方程方法、事件等等；可以參考
+[手冊](http://docs.juliadiffeq.org/latest/)以獲得更多進階的使用方式。
+
+<!-- DifferentialEquations.jl has many powerful options for customising things like
 accuracy, tolerances, solver methods, events and more; check out [the
 docs](http://docs.juliadiffeq.org/latest/) for more details on how to use it in
-more advanced ways.
+more advanced ways. -->
 
-## Let's Put an ODE Into a Neural Net Framework!
+## 讓我們把微分方程放到神經網路架構裡吧！
 
-To understand embedding an ODE into a neural network, let's look at what a
+<!-- ## Let's Put an ODE Into a Neural Net Framework! -->
+
+要理解一個微分方程是怎麼被嵌入到一個神經網路中，那我們就要看看一個神經網路層實際上是什麼。
+一個層實際上就是一個*可微分函數*，他會吃進一個大小為 `n` 的向量，然後吐出一個大小為 `m` 的新向量。
+就這樣！網路層傳統上是使用簡單的函數，像是矩陣相乘，但有了[可微分程式設計](https://julialang.org/blog/2017/12/ml&pl-zh_tw)的精神，
+人們越來越傾向實驗複雜的函數，像是光線追蹤以及物理引擎。
+
+
+<!-- To understand embedding an ODE into a neural network, let's look at what a
 neural network layer actually is. A layer is really just a *differentiable
 function* which takes in a vector of size `n` and spits out a new vector of size
 `m`. That's it! Layers have traditionally been simple functions like matrix
 multiply, but in the spirit of [differentiable
 programming](https://julialang.org/blog/2018/12/ml-language-compiler) people are
 increasingly experimenting with much more complex functions, such as ray tracers and
-physics engines.
+physics engines. -->
 
-Turns out that differential equations solvers fit this framework, too: A solve
+恰巧微分方程方法也符合這樣的架構：一個方法會吃進某個向量 `p`
+（它有可能包含一些參數像是初始起點），然後輸出某個新向量，也就是解。
+而且它還是可微分的，這代表我們可以直接把他推進大型可微分程式內。
+這個大型程式可以開心地容納神經網路，以及我們可以繼續使用標準最佳化技巧，
+像是 ADAM 來最佳化那些權重。
+
+<!-- Turns out that differential equations solvers fit this framework, too: A solve
 takes in some vector `p` (which might include parameters like the initial
 starting point), and outputs some new vector, the solution. Moreover it's
 differentiable, which means we can put it straight into a larger differentiable
 program. This larger program can happily include neural networks, and we can keep
-using standard optimisation techniques like ADAM to optimise their weights.
+using standard optimisation techniques like ADAM to optimise their weights. -->
 
-DiffEqFlux.jl makes it convenient to do just this; let's take it for a spin.
-We'll start by solving an equation as before, without gradients.
+DiffEqFlux.jl 讓這件事做起來很簡單；我們一起動手做！
+我們就一如往常地開始解這個方程式，不需要計算梯度。
+
+<!-- DiffEqFlux.jl makes it convenient to do just this; let's take it for a spin.
+We'll start by solving an equation as before, without gradients. -->
 
 ```julia
 p = [1.5,1.0,3.0,1.0]
@@ -308,7 +370,9 @@ sol = solve(prob,Tsit5(),saveat=0.1)
 A = sol[1,:] # length 101 vector
 ```
 
-Let's plot `(t,A)` over the ODE's solution to see what we got:
+我們一起將微分方程的解畫在 `(t,A)` 座標軸上，一起看看我們得到什麼：
+
+<!-- Let's plot `(t,A)` over the ODE's solution to see what we got: -->
 
 ```julia
 plot(sol)
@@ -318,62 +382,85 @@ scatter!(t,A)
 
 ![Data points plot](https://user-images.githubusercontent.com/1814174/51388173-9c6a4d00-1af6-11e9-9878-3c585d3cfffe.png)
 
-The most basic differential equation layer is `diffeq_rd`, which does the same
+最基礎的微分方程層是 `diffeq_rd`，它會做相同的事，只有一點語法上的改變。
+`diffeq_rd` 會接受被積函數的參數 `p`，並且把它放進由 `prob` 定義好的微分方程中，
+然後根據挑選好的程式參數（解法、容忍度...等等）解方程式。
+範例如下：
+
+<!-- The most basic differential equation layer is `diffeq_rd`, which does the same
 thing with a slightly altered syntax. `diffeq_rd` takes in parameters `p` for
 the integrand, puts it in the differential equation defined by `prob`, and
-solves it with the chosen arguments (solver, tolerance, etc). For example:
+solves it with the chosen arguments (solver, tolerance, etc). For example: -->
 
 ```julia
 using Flux, DiffEqFlux
 diffeq_rd(p,prob,Tsit5(),saveat=0.1)
 ```
 
-The nice thing about `diffeq_rd` is that it takes care of the type handling
+在 `diffeq_rd` 中的一個好的設計是，它會處理型別的相容性，讓它可以相容於神經網路框架（Flux）。
+要證明這個，我們來用函數定義一層神經網路，然後還有一個損失函數，是輸出值相對 `1` 距離的平方。
+在 Flux 中，他看起來像這樣：
+
+<!-- The nice thing about `diffeq_rd` is that it takes care of the type handling
 necessary to make it compatible with the neural network framework (here Flux). To show this,
 let's define a neural network with the function as our single layer, and then a loss
-function that is the squared distance of the output values from `1`. In Flux, this looks like:
+function that is the squared distance of the output values from `1`. In Flux, this looks like: -->
 
 ```julia
-p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
+p = param([2.2, 1.0, 2.0, 0.4]) # 初始參數向量
 params = Flux.Params([p])
 
-function predict_rd() # Our 1-layer neural network
+function predict_rd() # 我們的單層神經網路
   diffeq_rd(p,prob,Tsit5(),saveat=0.1)[1,:]
 end
 
-loss_rd() = sum(abs2,x-1 for x in predict_rd()) # loss function
+loss_rd() = sum(abs2,x-1 for x in predict_rd()) # 損失函數
 ```
 
-Now we tell Flux to train the neural network by running a 100 epoch
-to minimise our loss function (`loss_rd()`) and thus obtain the optimized parameters:
+現在我們會叫 Flux 來訓練神經網路，藉由跑 100 epoch 來最小化我們的損失函數（`loss_rd()`），
+因此，可以得到最佳化的參數：
+
+<!-- Now we tell Flux to train the neural network by running a 100 epoch
+to minimise our loss function (`loss_rd()`) and thus obtain the optimized parameters: -->
 
 ```julia
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
-cb = function () #callback function to observe training
+cb = function () # 用 callback function 來觀察訓練情況
   display(loss_rd())
-  # using `remake` to re-create our `prob` with current parameters `p`
+  # 利用 `remake` 來再造我們的 `prob` 並放入目前的參數 `p`
   display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
-# Display the ODE with the initial parameter values.
+# 顯示初始參數的微分方程
 cb()
 
 Flux.train!(loss_rd, params, data, opt, cb = cb)
 ```
 
-The result of this is the animation shown at the top.
-[This code can be found in the model-zoo](https://github.com/FluxML/model-zoo/blob/da4156b4a9fb0d5907dcb6e21d0e78c72b6122e0/other/diffeq/ode.jl)
+結果會以動畫顯示在上面。
+[這些程式碼會被放在 model-zoo](https://github.com/FluxML/model-zoo/blob/da4156b4a9fb0d5907dcb6e21d0e78c72b6122e0/other/diffeq/ode.jl)
 
-Flux finds the parameters of the neural network (`p`) which minimize
+<!-- The result of this is the animation shown at the top.
+[This code can be found in the model-zoo](https://github.com/FluxML/model-zoo/blob/da4156b4a9fb0d5907dcb6e21d0e78c72b6122e0/other/diffeq/ode.jl) -->
+
+Flux 在尋找可以最小化損失函數的嗔經網路參數（`p`），也就是，他會訓練神經網路：
+整個過程是這樣的，在神經網路中向前傳遞（forward pass）的過程也包含了解微分方程的過程。
+我們的損失函數會懲罰當兔子數量遠離 1 的時候，
+所以我們的神經網路會找到兔子以及狼的族群都是常數 1 的時候的參數。
+
+<!-- Flux finds the parameters of the neural network (`p`) which minimize
 the cost function, i.e. it trains the neural network: it just so happens that
 the forward pass of the neural network includes solving an ODE.
 Since our cost function put a penalty whenever the number of
 rabbits was far from 1, our neural network found parameters where our population
-of rabbits and wolves are both constant 1.
+of rabbits and wolves are both constant 1. -->
 
-Now that we have solving ODEs as just a layer, we can add it anywhere. For example,
-the multilayer perceptron is written in Flux as
+現在，我們已經把微分方程作為一層網路解完了，我們可以隨意將他加到任何地方。
+舉例來說，多層感知器（multilayer perceptron）可以用 Flux 寫成像這樣
+
+<!-- Now that we have solving ODEs as just a layer, we can add it anywhere. For example,
+the multilayer perceptron is written in Flux as -->
 
 ```julia
 m = Chain(

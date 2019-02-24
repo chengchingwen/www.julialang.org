@@ -184,7 +184,7 @@ mathematically enumerating our assumptions or in targeted drug dosage through
 PK/PD modelling in systems pharmacology. -->
 
 所以隨著我們的機器學習模型成長，會渴求更多更大量的資料，
-微分方程會變成一個很有吸引力的選項，可以指定非線性特性，（透過參數）學習而有限制條件的形式。
+微分方程因此成為一個很有吸引力的選項，用以指定一個可學習（透過參數）但又有限制條件的非線性轉換。
 他們會是在整合既有結構關係的領域知識，以及輸入輸出之間很重要的一個方式。
 有這樣的方法跟觀點來看待兩者，兩個方法都有其需要取捨的優缺點，
 可以讓彼此成為建模上互補的方法。

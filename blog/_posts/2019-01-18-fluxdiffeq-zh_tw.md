@@ -346,15 +346,24 @@ programming](https://julialang.org/blog/2018/12/ml-language-compiler) people are
 increasingly experimenting with much more complex functions, such as ray tracers and
 physics engines. -->
 
-Turns out that differential equations solvers fit this framework, too: A solve
+恰巧微分方程方法也符合這樣的架構：一個方法會吃進某個向量 `p`
+（它有可能包含一些參數像是初始起點），然後輸出某個新向量，也就是解。
+而且它還是可微分的，這代表我們可以直接把他推進大型可微分程式內。
+這個大型程式可以開心地容納神經網路，以及我們可以繼續使用標準最佳化技巧，
+像是 ADAM 來最佳化那些權重。
+
+<!-- Turns out that differential equations solvers fit this framework, too: A solve
 takes in some vector `p` (which might include parameters like the initial
 starting point), and outputs some new vector, the solution. Moreover it's
 differentiable, which means we can put it straight into a larger differentiable
 program. This larger program can happily include neural networks, and we can keep
-using standard optimisation techniques like ADAM to optimise their weights.
+using standard optimisation techniques like ADAM to optimise their weights. -->
 
-DiffEqFlux.jl makes it convenient to do just this; let's take it for a spin.
-We'll start by solving an equation as before, without gradients.
+DiffEqFlux.jl 讓這件事做起來很簡單；我們一起動手做！
+我們就一如往常地開始解這個方程式，不需要計算梯度。
+
+<!-- DiffEqFlux.jl makes it convenient to do just this; let's take it for a spin.
+We'll start by solving an equation as before, without gradients. -->
 
 ```julia
 p = [1.5,1.0,3.0,1.0]
@@ -363,7 +372,9 @@ sol = solve(prob,Tsit5(),saveat=0.1)
 A = sol[1,:] # length 101 vector
 ```
 
-Let's plot `(t,A)` over the ODE's solution to see what we got:
+我們一起將微分方程的解畫在 `(t,A)` 座標軸上，一起看看我們得到什麼：
+
+<!-- Let's plot `(t,A)` over the ODE's solution to see what we got: -->
 
 ```julia
 plot(sol)
@@ -373,62 +384,85 @@ scatter!(t,A)
 
 ![Data points plot](https://user-images.githubusercontent.com/1814174/51388173-9c6a4d00-1af6-11e9-9878-3c585d3cfffe.png)
 
-The most basic differential equation layer is `diffeq_rd`, which does the same
+最基礎的微分方程層是 `diffeq_rd`，它會做相同的事，只有一點語法上的改變。
+`diffeq_rd` 會接受被積函數的參數 `p`，並且把它放進由 `prob` 定義好的微分方程中，
+然後根據挑選好的程式參數（解法、容忍度...等等）解方程式。
+範例如下：
+
+<!-- The most basic differential equation layer is `diffeq_rd`, which does the same
 thing with a slightly altered syntax. `diffeq_rd` takes in parameters `p` for
 the integrand, puts it in the differential equation defined by `prob`, and
-solves it with the chosen arguments (solver, tolerance, etc). For example:
+solves it with the chosen arguments (solver, tolerance, etc). For example: -->
 
 ```julia
 using Flux, DiffEqFlux
 diffeq_rd(p,prob,Tsit5(),saveat=0.1)
 ```
 
-The nice thing about `diffeq_rd` is that it takes care of the type handling
+在 `diffeq_rd` 中的一個好的設計是，它會處理型別的相容性，讓它可以相容於神經網路框架（Flux）。
+要證明這個，我們來用函數定義一層神經網路，然後還有一個損失函數，是輸出值相對 `1` 距離的平方。
+在 Flux 中，他看起來像這樣：
+
+<!-- The nice thing about `diffeq_rd` is that it takes care of the type handling
 necessary to make it compatible with the neural network framework (here Flux). To show this,
 let's define a neural network with the function as our single layer, and then a loss
-function that is the squared distance of the output values from `1`. In Flux, this looks like:
+function that is the squared distance of the output values from `1`. In Flux, this looks like: -->
 
 ```julia
-p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
+p = param([2.2, 1.0, 2.0, 0.4]) # 初始參數向量
 params = Flux.Params([p])
 
-function predict_rd() # Our 1-layer neural network
+function predict_rd() # 我們的單層神經網路
   diffeq_rd(p,prob,Tsit5(),saveat=0.1)[1,:]
 end
 
-loss_rd() = sum(abs2,x-1 for x in predict_rd()) # loss function
+loss_rd() = sum(abs2,x-1 for x in predict_rd()) # 損失函數
 ```
 
-Now we tell Flux to train the neural network by running a 100 epoch
-to minimise our loss function (`loss_rd()`) and thus obtain the optimized parameters:
+現在我們會叫 Flux 來訓練神經網路，藉由跑 100 epoch 來最小化我們的損失函數（`loss_rd()`），
+因此，可以得到最佳化的參數：
+
+<!-- Now we tell Flux to train the neural network by running a 100 epoch
+to minimise our loss function (`loss_rd()`) and thus obtain the optimized parameters: -->
 
 ```julia
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
-cb = function () #callback function to observe training
+cb = function () # 用 callback function 來觀察訓練情況
   display(loss_rd())
-  # using `remake` to re-create our `prob` with current parameters `p`
+  # 利用 `remake` 來再造我們的 `prob` 並放入目前的參數 `p`
   display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
-# Display the ODE with the initial parameter values.
+# 顯示初始參數的微分方程
 cb()
 
 Flux.train!(loss_rd, params, data, opt, cb = cb)
 ```
 
-The result of this is the animation shown at the top.
-[This code can be found in the model-zoo](https://github.com/FluxML/model-zoo/blob/da4156b4a9fb0d5907dcb6e21d0e78c72b6122e0/other/diffeq/ode.jl)
+結果會以動畫顯示在上面。
+[這些程式碼會被放在 model-zoo](https://github.com/FluxML/model-zoo/blob/da4156b4a9fb0d5907dcb6e21d0e78c72b6122e0/other/diffeq/ode.jl)
 
-Flux finds the parameters of the neural network (`p`) which minimize
+<!-- The result of this is the animation shown at the top.
+[This code can be found in the model-zoo](https://github.com/FluxML/model-zoo/blob/da4156b4a9fb0d5907dcb6e21d0e78c72b6122e0/other/diffeq/ode.jl) -->
+
+Flux 在尋找可以最小化損失函數的嗔經網路參數（`p`），也就是，他會訓練神經網路：
+整個過程是這樣的，在神經網路中向前傳遞（forward pass）的過程也包含了解微分方程的過程。
+我們的損失函數會懲罰當兔子數量遠離 1 的時候，
+所以我們的神經網路會找到兔子以及狼的族群都是常數 1 的時候的參數。
+
+<!-- Flux finds the parameters of the neural network (`p`) which minimize
 the cost function, i.e. it trains the neural network: it just so happens that
 the forward pass of the neural network includes solving an ODE.
 Since our cost function put a penalty whenever the number of
 rabbits was far from 1, our neural network found parameters where our population
-of rabbits and wolves are both constant 1.
+of rabbits and wolves are both constant 1. -->
 
-Now that we have solving ODEs as just a layer, we can add it anywhere. For example,
-the multilayer perceptron is written in Flux as
+現在，我們已經把微分方程作為一層網路解完了，我們可以隨意將他加到任何地方。
+舉例來說，多層感知器（multilayer perceptron）可以用 Flux 寫成像這樣
+
+<!-- Now that we have solving ODEs as just a layer, we can add it anywhere. For example,
+the multilayer perceptron is written in Flux as -->
 
 ```julia
 m = Chain(

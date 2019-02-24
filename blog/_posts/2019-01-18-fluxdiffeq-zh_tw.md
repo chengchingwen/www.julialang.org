@@ -183,14 +183,12 @@ learning about cellular interactions by encoding known biological structures and
 mathematically enumerating our assumptions or in targeted drug dosage through
 PK/PD modelling in systems pharmacology. -->
 
-So as our machine learning models grow and are hungry for larger and larger
-amounts of data, differential equations have become an attractive option for
-specifying nonlinearities in a learnable (via the parameters) but constrained
-form. They are essentially a way of incorporating prior domain-specific knowledge of the structural relations
-between the inputs and outputs. Given this way of looking at the two, both methods
-trade off advantages and disadvantages, making them complementary tools for modeling.
-It seems like a clear next step in scientific practice to start putting them
-together in new and exciting ways!
+所以隨著我們的機器學習模型成長，會渴求更多更大量的資料，
+微分方程會變成一個很有吸引力的選項，可以指定非線性特性，（透過參數）學習而有限制條件的形式。
+他們會是在整合既有結構關係的領域知識，以及輸入輸出之間很重要的一個方式。
+有這樣的方法跟觀點來看待兩者，兩個方法都有其需要取捨的優缺點，
+可以讓彼此成為建模上互補的方法。
+這看起來是一條開始將科學實踐與機器學習兩相結合的明顯道路，期待未來會有嶄新而令人興奮的未來！
 
 ## 什麼是神經微分方程（ODE）？
 
@@ -199,7 +197,7 @@ together in new and exciting ways!
 神經微分方程是眾多方法的其中之一，將這兩者結合在一起。
 最簡單的解釋方法就是，並不是直接去學非線性轉換，我們希望去學到非線性轉換的結構。
 如此一來，不用去計算 $[[y=ML(x)]]，我們將機器學習模型放在導數項上 $[[y'(x) = ML(x)]]，然後我們解微分方程。
-為什麼要這麼做？Why would you ever do this? 嗯，一個動機就是這樣定義的模型，然後用最簡單、最容易出錯的方式，尤拉法（Euler method），
+為什麼要這麼做？這是因為，一個動機就是這樣定義的模型，然後用最簡單、最容易出錯的方式，尤拉法（Euler method），
 解微分方程，你會得到跟[殘差神經網路（residual neural network）](https://arxiv.org/abs/1512.03385)等價的結果。
 尤拉法的工作原理是基於 $[[y'(x) = \frac{dy}{dx}]] 這個事實，因此，
 

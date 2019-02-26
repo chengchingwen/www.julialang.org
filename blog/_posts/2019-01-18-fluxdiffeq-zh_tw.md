@@ -469,8 +469,10 @@ m = Chain(
   softmax)
 ```
 
+而且，假如我們有個帶有合適大小的參數向量的 ODE ，我們可以像這樣把它代入我們的模型中：
+<!-- 
 and if we had an appropriate ODE which took a parameter vector of the right size,
-we can stick it right in there:
+we can stick it right in there: -->
 
 ```julia
 m = Chain(
@@ -481,8 +483,9 @@ m = Chain(
   softmax)
 ```
 
-or we can stick it into a convolutional neural network, where the previous
-layers define the initial condition for the ODE:
+抑或是，我們也可以把它代入到卷積神經網路中，使用前一層卷積層的輸出當作 ODE 的初始條件使用：
+<!-- or we can stick it into a convolutional neural network, where the previous
+layers define the initial condition for the ODE: -->
 
 ```julia
 m = Chain(
@@ -495,26 +498,31 @@ m = Chain(
   Dense(288, 10), softmax) |> gpu
 ```
 
-As long as you can write down the forward pass, we can take any parameterised,
-differentiable program and optimise it. The world is your oyster.
+只要你可以寫下向前傳播 (forward pass)，我們就可以處理任何參數化可微分的程序並優化它。一個新世界即為你的囊中之物啊。
+<!-- As long as you can write down the forward pass, we can take any parameterised,
+differentiable program and optimise it. The world is your oyster. -->
 
-## Why is a full ODE solver suite necessary for doing this well?
-
-Where we have combined an existing solver suite and deep learning library, the
+## 完整的 ODE 求解工具對於這個應用為什麼這麼必須呢?
+<!-- ## Why is a full ODE solver suite necessary for doing this well? -->
+前文中，我們把現有的求解工具和深度學習結合在一起。反觀另一個傑出的實作 [torchdiffeq](https://github.com/rtqichen/torchdiffeq) 採取了另一種實作方式，直接使用 pytorch 實作了許多求解演算法，包含一個適應性的 Runge Kutta 4-5 (`dopri5`) 和一個 Adams-Bashforth-Moulton 方法 (`adams`)。然而，其中的實作對於特定的模型來說，雖可算是非常有效率地，但無法完整整合所有可行的求解工具卻帶來了一些限制。
+<!-- Where we have combined an existing solver suite and deep learning library, the
 excellent [torchdiffeq](https://github.com/rtqichen/torchdiffeq) project takes
 an alternative approach, instead implementing solver methods directly in
 PyTorch, including an adaptive Runge Kutta 4-5 (`dopri5`) and an
 Adams-Bashforth-Moulton method (`adams`). However, while their approach is very
 effective for certain kinds of models, not having access to a full solver suite
-is limiting.
+is limiting. -->
 
+我們考慮以下這個例子：[ROBER
+ODE](https://www.radford.edu/~thompson/vodef90web/problems/demosnodislin/Single/DemoRobertson/demorobertson.pdf)。最被廣泛測試過 (且最佳化) 過的 Adams-Bashforth-Moulton 方法的實作是著名的 [C++ 套件 SUNDIALS 中的 CVODE 積分器](https://computation.llnl.gov/projects/sundials) (傳統的 LSODE 的一個分支)。讓我們用 DifferentialEquations.jl 去使用 CVODE 中的 Admas 方法來解這個 ODE 吧：
+<!-- 
 Consider the following example, the [ROBER
 ODE](https://www.radford.edu/~thompson/vodef90web/problems/demosnodislin/Single/DemoRobertson/demorobertson.pdf).
 The most well-tested (and optimized) implementation of an
 Adams-Bashforth-Moulton method is the [CVODE integrator in the C++ package
 SUNDIALS](https://computation.llnl.gov/projects/sundials) (a derivative of the
 classic LSODE). Let's use DifferentialEquations.jl to call CVODE with its Adams
-method and have it solve the ODE for us:
+method and have it solve the ODE for us: -->
 
 ```julia
 rober = @ode_def Rober begin
